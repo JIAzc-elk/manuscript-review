@@ -15,20 +15,19 @@ import sys
 from pathlib import Path
 
 REQUIRED_SECTIONS = [
-    "0. 审核摘要",
-    "1. 审核范围与依据",
-    "2. 章节速写",
-    "3. 分维度评价",
-    "4. 关键问题清单",
-    "5. 修改方案",
-    "6. 素材一致性核对",
-    "7. 圆桌争议",
-    "8. 亮点与保留项",
-    "9. 评分明细",
-    "10. 覆盖范围",
+    "审核摘要",
+    "审核范围与依据",
+    "章节速写",
+    "分维度评价",
+    "关键问题清单",
+    "修改方案",
+    "圆桌争议",
+    "亮点与保留项",
+    "评分明细",
+    "覆盖范围",
 ]
 
-DIMENSIONS = ["人物与关系", "结构与节奏", "场景执行与对白", "设定与世界逻辑", "语言与阅读体验"]
+DIMENSIONS = ["场景与戏剧效果", "对白与人物声音", "描写与文字", "节奏与可读性", "人物与情感", "幕/序列效果"]
 
 FORBIDDEN_PHRASES = [
     "已修改用户文件",
@@ -41,7 +40,7 @@ FORBIDDEN_PHRASES = [
 
 def section(text: str, title: str) -> str:
     """Return the body of an H2 section, excluding nested H3 splits."""
-    pattern = re.compile(rf"^##\s+{re.escape(title)}.*?$(.*?)(?=^##\s+|\Z)", re.M | re.S)
+    pattern = re.compile(rf"^##\s+(?:\d+\.\s*)?{re.escape(title)}.*?$(.*?)(?=^##\s+|\Z)", re.M | re.S)
     match = pattern.search(text)
     return match.group(1) if match else ""
 
@@ -61,7 +60,7 @@ def main() -> int:
     warnings: list[str] = []
 
     # 1. 必需章节
-    missing = [s for s in REQUIRED_SECTIONS if not re.search(rf"^##\s+{re.escape(s)}", text, re.M)]
+    missing = [s for s in REQUIRED_SECTIONS if not re.search(rf"^##\s+(?:\d+\.\s*)?{re.escape(s)}", text, re.M)]
     if missing:
         errors.append("缺少必需章节: " + "；".join(missing))
 
@@ -95,24 +94,32 @@ def main() -> int:
         if dim not in text:
             warnings.append(f"未找到维度: {dim}")
 
-    # 7. 评分明细权重
-    for weight in ["25%", "15%", "10%"]:
-        if weight not in text:
-            warnings.append(f"评分明细中未找到权重 {weight}")
+    # 7. 评分明细权重（六维 / 单章重分配）
+    weight_groups = [("25%", "27.8%"), ("20%", "22.2%"), ("15%", "16.7%"), ("10%", "11.1%")]
+    for group in weight_groups:
+        if not any(w in text for w in group):
+            warnings.append(f"评分明细中未找到权重 {' 或 '.join(group)}")
 
-    # 7.1 故事设计评分（Craft）
-    craft_items = ["激励事件", "求索", "鸿沟", "场景价值转折", "不归点", "人物矛盾", "人物弧"]
-    if "故事设计评分（Craft Scorecard）" not in text:
-        warnings.append("缺少“故事设计评分（Craft Scorecard）”；新模板要求 10 项 craft 子分")
-    else:
+    # 7.1 写作技巧 / 故事设计评分（Craft）
+    if "写作技巧评分（Craft Scorecard）" in text:
+        craft_items = ["场景目标/转折", "对白行动/潜台词", "人物声音", "描写/感官/POV", "节奏/句法", "情绪落点", "人物欲望/矛盾", "人物弧/关系", "幕/序列升级/逆转", "类型契约/读者体验"]
         missing_craft = [x for x in craft_items if x not in text]
         if missing_craft:
-            warnings.append("Craft Scorecard 缺少项目: " + "、".join(missing_craft))
-    if "Craft Index" not in text:
-        warnings.append("缺少“故事设计分（Craft Index）”")
+            warnings.append("写作技巧 Scorecard 缺少项目: " + "、".join(missing_craft))
+    elif "故事设计评分（Craft Scorecard）" in text:
+        craft_items = ["激励事件", "求索", "鸿沟", "场景价值转折", "不归点", "人物矛盾", "人物弧"]
+        missing_craft = [x for x in craft_items if x not in text]
+        if missing_craft:
+            warnings.append("故事设计 Scorecard 缺少项目: " + "、".join(missing_craft))
+    else:
+        warnings.append("缺少“写作技巧评分（Craft Scorecard）”或“故事设计评分（Craft Scorecard）”")
+    if "Craft Index" not in text and "写作技巧分" not in text:
+        warnings.append("缺少“写作技巧分（Craft Index）”")
+    if "审核单位" not in text:
+        warnings.append("缺少“审核单位”（单章/序列/幕/卷）")
 
     # 8. P0 证据锚点
-    modify = section(text, "5. 修改方案")
+    modify = section(text, "修改方案")
     p0_part = re.split(r"^###\s+P1", modify, maxsplit=1, flags=re.M)[0]
     if "P0" in p0_part and "必须处理" in p0_part:
         has_p0_content = bool(re.search(r"####\s+", p0_part))
@@ -120,7 +127,7 @@ def main() -> int:
             errors.append("P0 修改方案缺少正文/素材证据锚点（[正文·…] / [素材·…]）")
 
     # 9. P0 数量与总分上限（只警告，因为“未解决”需人工判断）
-    problems = section(text, "4. 关键问题清单")
+    problems = section(text, "关键问题清单")
     p0_count = len(re.findall(r"\|\s*\**P0\**\s*\|", problems))
     if p0_count and total is not None:
         cap = 6.5 if p0_count == 1 else (5.8 if p0_count == 2 else 5.0)

@@ -18,7 +18,6 @@ ROOT = Path(__file__).resolve().parents[1]
 SKILL = ROOT / ".agents" / "skills" / "manuscript-review"
 
 ROLES = [
-    "worldbuilding",
     "character",
     "story_plot_structure",
     "scene_dialogue",
@@ -28,7 +27,6 @@ ROLES = [
 ]
 
 CLAUDE_NAMES = {
-    "worldbuilding": "worldbuilding",
     "character": "character",
     "story_plot_structure": "story-plot-structure",
     "scene_dialogue": "scene-dialogue",
@@ -43,8 +41,10 @@ class StructureTests(unittest.TestCase):
         for rel in [
             "SKILL.md",
             "runtime/READ_ONLY_AND_SAFETY.md",
+            "runtime/REVIEW_UNIT_AND_CONTEXT.md",
             "runtime/INTAKE_AND_EVIDENCE.md",
             "runtime/COUNCIL_ROUNDS.md",
+            "runtime/WRITING_CRAFT_LENS.md",
             "runtime/REVIEW_CHECKLISTS.md",
             "runtime/SCORING_RUBRIC.md",
             "runtime/REPORT_CONTRACT.md",
@@ -71,19 +71,31 @@ class StructureTests(unittest.TestCase):
         path = SKILL / "runtime" / "STORY_CRAFT_LENS.md"
         self.assertTrue(path.is_file())
         text = path.read_text(encoding="utf-8")
-        for term in ["激励事件", "求索", "鸿沟", "幕逆转", "不归点", "人物矛盾", "人物弧", "Craft Index", "序章"]:
+        for term in ["激励事件", "求索", "鸿沟", "幕逆转", "不归点", "人物矛盾", "人物弧", "幕级故事设计分", "序章"]:
             self.assertIn(term, text)
+        writing = SKILL / "runtime" / "WRITING_CRAFT_LENS.md"
+        self.assertTrue(writing.is_file())
+        wtext = writing.read_text(encoding="utf-8")
+        for term in ["场景", "对白", "描写", "节奏", "更好的写法", "写作技巧分"]:
+            self.assertIn(term, wtext)
         scoring = (SKILL / "runtime" / "SCORING_RUBRIC.md").read_text(encoding="utf-8")
-        self.assertIn("故事设计分（Craft Index）", scoring)
+        self.assertIn("写作技巧分（Craft Index）", scoring)
         template = (SKILL / "templates" / "REPORT_TEMPLATE.md").read_text(encoding="utf-8")
-        self.assertIn("故事设计评分（Craft Scorecard）", template)
+        self.assertIn("写作技巧评分（Craft Scorecard）", template)
         self.assertIn("Craft Index", template)
+
+    def test_worldbuilding_removed(self) -> None:
+        self.assertFalse((SKILL / "roles" / "worldbuilding.md").exists())
+        self.assertFalse((ROOT / ".opencode" / "agents" / "worldbuilding.md").exists())
+        self.assertFalse((ROOT / ".claude" / "agents" / "worldbuilding.md").exists())
+        self.assertFalse((ROOT / ".codex" / "agents" / "worldbuilding.toml").exists())
+        router = (SKILL / "SKILL.md").read_text(encoding="utf-8")
+        self.assertNotIn("`worldbuilding`", router)
 
     def test_roles_require_craft_subscores(self) -> None:
         for role in ["story_plot_structure", "character", "scene_dialogue"]:
             text = (SKILL / "roles" / f"{role}.md").read_text(encoding="utf-8")
-            self.assertIn("Craft 必答", text, role)
-            self.assertIn("Craft 子分", text, role)
+            self.assertIn("写作技巧", text, role)
 
     def test_material_handoff_gate(self) -> None:
         router = (SKILL / "SKILL.md").read_text(encoding="utf-8")
@@ -94,7 +106,7 @@ class StructureTests(unittest.TestCase):
             self.assertIn("素材交接门", text)
             self.assertIn("用户确认无", text)
             self.assertIn("未确认", text)
-        self.assertIn("素材状态未确认时，不得启动 Round 1", rounds)
+        self.assertIn("不得启动 Round 1", rounds)
         self.assertIn("素材状态", template)
 
     def test_roles_have_core_sections(self) -> None:

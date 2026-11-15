@@ -2,10 +2,10 @@
 
 ## 当前状态
 
-- 版本：`0.1.3`（beta）
-- 结构测试：`python3 -m unittest discover -s tests` → 13 项通过
+- 版本：`0.3.0`（beta）
+- 结构测试：`python3 -m unittest discover -s tests` → 14 项通过
 - 报告检查：`python3 .agents/skills/manuscript-review/scripts/check_report.py examples/sample_report.md` → 通过
-- 已包含：素材交接门、故事设计透镜（Craft Scorecard / Craft Index）、七角色、三端适配、只读契约、示例与测试
+- 已包含：素材交接门、审核单位门（幕/序列优先）、写作技巧透镜、六维写作评分、五核心写作角色 + 可选秘书、三端适配、只读契约、示例与测试
 
 ## 发布前检查
 
@@ -13,7 +13,7 @@
 - [x] `LICENSE`（MIT）与 `THIRD_PARTY_NOTICES.md`
 - [x] 未包含用户设定库、小说正文或私人材料
 - [x] 未包含 API key、token、个人绝对路径
-- [x] 13 项结构测试通过
+- [x] 14 项结构测试通过
 - [x] 示例报告通过 `check_report.py`
 
 ## 推送到 GitHub
@@ -45,6 +45,6 @@ HTTPS 方式同理，把 remote 换成 `https://github.com/<你的用户名>/man
 ## 发布后建议
 
 1. 在仓库 About 中填写描述与 topics：`novel`、`writing`、`review`、`skill`、`opencode`、`claude-code`、`codex`。
-2. 若要做正式 Release，打 tag：`git tag v0.1.3 && git push origin v0.1.3`。
+2. 若要做正式 Release，打 tag：`git tag v0.3.0 && git push origin v0.3.0`。
 3. 若未来加入第三方方法卡或参考作品，先更新 `THIRD_PARTY_NOTICES.md`。
 4. 不要把用户的设定库、小说正文或私人项目提交进本仓库。

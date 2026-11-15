@@ -1,6 +1,6 @@
 ---
 name: manuscript-review
-description: "正文审核器：当用户提供小说正文（章节/片段）以及可选的设定、人物卡、大纲、前文、文风样本、读者反馈等任意素材，要求评价章节质量、找问题、给修改意见或判断“这章能不能发”时使用。若用户只给正文且未说明素材情况，先问一次是否有设定/人物卡/大纲/前文；用户确认没有后再按纯文本模式审。组织多个专业角色多轮讨论，最终只输出一份审核报告，绝不修改用户提供的任何文件。不用于代写正文、续写、直接改稿或设定创作。"
+description: "正文审核器：当用户提供小说正文（一个序列 3–8 章、一幕、一卷或单章片段）以及可选的前情、幕纲、人物卡、文风参考、读者反馈等素材，要求评价“写得好不好看、哪里不好看、怎么写更好”时使用。写作技巧优先；不评设定/逻辑一致性。默认按幕/序列审核；单章只做局部诊断。若用户只给正文且未说明素材情况，先问一次是否有前情/幕纲/人物卡/文风参考；用户确认没有后再按纯文本模式审。组织五个写作角色多轮讨论，最终只输出一份审核报告，绝不修改用户提供的任何文件。不用于代写正文、续写、直接改稿或设定创作。"
 compatibility: "Multi-host compatibility discovery adapter; canonical runtime router remains .agents/skills/manuscript-review/SKILL.md"
 ---
 
@@ -18,4 +18,4 @@ compatibility: "Multi-host compatibility discovery adapter; canonical runtime ro
 
 相对路径以 canonical 文件所在目录为基准解析。角色契约在 `../../../.agents/skills/manuscript-review/roles/`，运行规则在 `runtime/`，模板在 `templates/`。不要在本适配器中总结、改写或替代 canonical 权威。
 
-Claude Code 的七个专业子代理在 `.claude/agents/`，使用连字符宿主名（例如 `story-plot-structure`），但圆桌归属以 Stable Agent ID（例如 `story_plot_structure`）为准。
+Claude Code 的五个核心写作子代理 + 可选秘书在 `.claude/agents/`，使用连字符宿主名（例如 `story-plot-structure`），但圆桌归属以 Stable Agent ID（例如 `story_plot_structure`）为准。
